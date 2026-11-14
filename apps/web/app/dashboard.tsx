@@ -10,8 +10,17 @@ import { Icon } from "@astryxdesign/core/Icon";
 import { HStack, VStack } from "@astryxdesign/core/Layout";
 import { useCalendarDays, useCalendarNavigation } from "@astryxdesign/core/Calendar";
 import { Heading, Text } from "@astryxdesign/core/Text";
+import MoneyInputModal, {
+  type MoneyInputEntry,
+} from "./components/MoneyInputModal";
 
-const spendingByDay = new Map([
+type Transaction = {
+  date: ISODateString;
+  type: MoneyInputEntry["type"];
+  amount: number;
+};
+
+const sampleExpenseAmounts = [
   [1, 4800],
   [3, 1280],
   [5, 3600],
@@ -32,13 +41,8 @@ const spendingByDay = new Map([
   [27, 1240],
   [29, 4100],
   [30, 1800],
-]);
+] as const;
 
-const monthlyExpense = Array.from(spendingByDay.values()).reduce(
-  (total, amount) => total + amount,
-  0,
-);
-const monthlyIncome = 320000;
 const currency = new Intl.NumberFormat("ja-JP", {
   style: "currency",
   currency: "JPY",
@@ -53,10 +57,10 @@ type ISODateString = `${number}${number}${number}${number}-${number}${number}-${
 
 function formatCompactAmount(amount: number) {
   if (amount >= 10000) {
-    return `${(amount / 10000).toFixed(1)}万`;
+    return `${(Number(amount) / 10000).toFixed(1)}万`;
   }
   if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)}k`;
+    return `${(Number(amount) / 1000).toFixed(1)}k`;
   }
   return amount.toLocaleString("ja-JP");
 }
@@ -66,6 +70,27 @@ function formatISODate(year: number, month: number, day: number): ISODateString 
   const paddedMonth = String(month).padStart(2, "0");
   const paddedDay = String(day).padStart(2, "0");
   return `${paddedYear}-${paddedMonth}-${paddedDay}` as ISODateString;
+}
+
+function createSampleTransactions(initialDate: ISODateString): Transaction[] {
+  const [year, month] = initialDate.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const monthPrefix = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
+
+  return [
+    ...sampleExpenseAmounts
+      .filter(([day]) => day <= daysInMonth)
+      .map(([day, amount]) => ({
+        date: `${monthPrefix}-${String(day).padStart(2, "0")}` as ISODateString,
+        type: "expense" as const,
+        amount,
+      })),
+    {
+      date: `${monthPrefix}-01` as ISODateString,
+      type: "income",
+      amount: 320000,
+    },
+  ];
 }
 
 function SummaryCard({
@@ -109,6 +134,10 @@ function SummaryCard({
 
 export default function Dashboard({ initialDate }: { initialDate: ISODateString }) {
   const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [transactions, setTransactions] = useState(() =>
+    createSampleTransactions(initialDate),
+  );
+  const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
   const {
     monthYearLabel,
     visibleCalendarMonths,
@@ -121,11 +150,62 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
     weekStartsOn: 0,
     hasVariableRowCount: true,
   });
-  const selectedDay = Number(selectedDate.slice(-2));
-  const selectedAmount = spendingByDay.get(selectedDay) ?? 0;
+  const monthPrefix = formatISODate(year, month, 1).slice(0, 7);
+  const monthlyTransactions = transactions.filter((transaction) =>
+    transaction.date.startsWith(monthPrefix),
+  );
+  const monthlyExpense = monthlyTransactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((total, transaction) => total + transaction.amount, 0);
+  const monthlyIncome = monthlyTransactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((total, transaction) => total + transaction.amount, 0);
+  const dailyExpenses = new Map<string, number>();
+  for (const transaction of monthlyTransactions) {
+    if (transaction.type === "expense") {
+      dailyExpenses.set(
+        transaction.date,
+        (dailyExpenses.get(transaction.date) ?? 0) + transaction.amount,
+      );
+    }
+  }
+  const selectedExpense = transactions
+    .filter(
+      (transaction) =>
+        transaction.date === selectedDate && transaction.type === "expense",
+    )
+    .reduce((total, transaction) => total + transaction.amount, 0);
+  const selectedIncome = transactions
+    .filter(
+      (transaction) =>
+        transaction.date === selectedDate && transaction.type === "income",
+    )
+    .reduce((total, transaction) => total + transaction.amount, 0);
+  const daysWithExpenses = new Set(
+    monthlyTransactions
+      .filter((transaction) => transaction.type === "expense")
+      .map((transaction) => transaction.date),
+  ).size;
   const selectedDateLabel = weekdayFormatter.format(
     new Date(`${selectedDate}T12:00:00+09:00`),
   );
+
+  function openEntryDialog(date: ISODateString) {
+    setSelectedDate(date);
+    setIsEntryDialogOpen(true);
+  }
+
+  function saveTransaction(entry: MoneyInputEntry) {
+    setTransactions((currentTransactions) => [
+      ...currentTransactions,
+      {
+        date: selectedDate,
+        type: entry.type,
+        amount: entry.amount,
+      },
+    ]);
+    setIsEntryDialogOpen(false);
+  }
 
   function changeMonth(delta: number) {
     const nextMonth = new Date(Date.UTC(year, month - 1 + delta, 1));
@@ -139,6 +219,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
   }
 
   return (
+    <>
     <Center axis="horizontal" width="100%">
       <VStack
         as="main"
@@ -246,9 +327,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                 {weeks.map((week) => (
                   <Grid columns={7} gap={0.5} key={week[0].iso}>
                     {week.map((day) => {
-                      const amount = day.isOutside
-                        ? 0
-                        : (spendingByDay.get(day.dayNumber) ?? 0);
+                      const amount = dailyExpenses.get(day.iso) ?? 0;
                       const isSelected = selectedDate === day.iso;
 
                       return (
@@ -259,7 +338,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                             size="sm"
                             width="100%"
                             isDisabled={day.isOutside}
-                            onClick={() => setSelectedDate(day.iso)}
+                            onClick={() => openEntryDialog(day.iso)}
                           >
                             {day.dayNumber}
                           </Button>
@@ -296,17 +375,22 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                 </VStack>
                 <Divider />
                 <VStack gap={1}>
-                  <Text as="p" type="supporting">
-                    この日の支出合計
-                  </Text>
-                  <Text type="display-2" weight="semibold">
-                    {currency.format(selectedAmount)}
-                  </Text>
-                  <Text as="p" type="supporting">
-                    {selectedAmount
-                      ? "日別の支出を合計しています"
-                      : "この日の支出記録はありません"}
-                  </Text>
+                  <HStack hAlign="between" vAlign="center">
+                    <Text as="p" type="supporting">
+                      支出
+                    </Text>
+                    <Text type="label" weight="semibold">
+                      {currency.format(selectedExpense)}
+                    </Text>
+                  </HStack>
+                  <HStack hAlign="between" vAlign="center">
+                    <Text as="p" type="supporting">
+                      収入
+                    </Text>
+                    <Text type="label" weight="semibold">
+                      {currency.format(selectedIncome)}
+                    </Text>
+                  </HStack>
                 </VStack>
               </VStack>
             </Card>
@@ -319,7 +403,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                     支出があった日
                   </Text>
                   <Text type="label" weight="semibold">
-                    {spendingByDay.size}日
+                    {daysWithExpenses}日
                   </Text>
                 </HStack>
                 <Divider />
@@ -328,7 +412,11 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                     支出のある日の平均
                   </Text>
                   <Text type="label" weight="semibold">
-                    {currency.format(Math.round(monthlyExpense / spendingByDay.size))}
+                    {currency.format(
+                      daysWithExpenses
+                        ? Math.round(monthlyExpense / daysWithExpenses)
+                        : 0,
+                    )}
                   </Text>
                 </HStack>
                 <Divider />
@@ -350,5 +438,12 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
         </Text>
       </VStack>
     </Center>
+    <MoneyInputModal
+      isOpen={isEntryDialogOpen}
+      onOpenChange={setIsEntryDialogOpen}
+      dateLabel={selectedDateLabel}
+      onSave={saveTransaction}
+    />
+    </>
   );
 }
