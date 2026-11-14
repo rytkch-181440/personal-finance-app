@@ -1,62 +1,153 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# AGENTS.md
 
-## This is NOT the Next.js you know
+## 1. プロジェクト概要
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+本プロジェクトは、個人の資産・収支を管理する家計簿アプリケーションを開発するプロジェクトである。
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+ユーザーが日々の支出や収入を把握し、資産状況を可視化できることを目的とする。
 
-<!-- END:nextjs-agent-rules -->
+将来的な機能拡張やモバイルアプリへの展開も考慮し、保守性・拡張性・再利用性を重視した設計とする。
 
-<!-- ASTRYX:START -->
-Astryx v0.7.13 · 174 components
-CLI: run every command as `bunx astryx <cmd>` (shown below as `astryx ...`).
+### 開発方針
+- シンプルで直感的に操作できるUI/UXを実現する。
+- 個人の金融情報を扱うため、セキュリティとプライバシーを最優先する。
+- 特定の技術やライブラリに過度に依存しない設計を心がける。
+- 小さく実装し、動作確認とテストを繰り返しながら開発する。
+- 将来的な機能追加やiOSアプリとの連携を考慮する。
 
-SETUP (once, in app entry e.g. main.tsx) — without these, components render unstyled:
-  import "@astryxdesign/core/reset.css";
-  import "@astryxdesign/core/astryx.css";
+## 2. 技術スタック
 
-WORKFLOW — start every page from a template, never from scratch:
-1. `astryx build "<idea>"` — names the template to scaffold from and the parts it lacks.
-2. `astryx template <name> <path>` — scaffold it; keep its frame, gap and padding; replace the content.
-3. `astryx template <Block>` for parts it lacks; `astryx component <Name>` to read props before using one.
-Changing an existing page? Keep it: skip step 2 and add blocks/components inside its sections.
-Before you deliver a build, run `astryx doctor --built <dir>`; don't deliver it if it fails.
+以下の技術スタックを基本とする。
 
-RULES:
-- No <div> — components handle all layout and spacing.
-- Read `astryx docs layout` before changing a template's frame.
-- Dense data = rows (Table, List/Item), not Card-wrapped lists. Badge = counts only.
-- Style with component props first, then Tailwind utilities backed by tokens. No raw hex/px.
-- Palettes and custom colors go through the theme, never :root overrides. Run `astryx theme add <slug>` to import; `theme eject <slug>` only forks source. See `astryx docs theme`.
-- SELF-CHECK: re-read the file; replace any style={{…}}, raw <div>/<span>, imported .css/@apply, or hardcoded/arbitrary value (bg-[#fff], p-[13px]) with the component or a token-backed utility.
+### Frontend
+- Framework: Next.js
+- Language: TypeScript
 
-`astryx help` lists every command. Key ones beyond the workflow:
-  search "<query>"   find any component / hook / doc / template
-  discover <words>   integrations you could add
-  docs <topic>       getting-started, principles, tokens, theme … (`astryx docs` lists all)
-  docs cli           commands and API reference
-  docs authoring     build an integration package, and every field it holds
-  upgrade --from <old version> --apply   run after a dependency bump
-<!-- ASTRYX:END -->
+### Backend
+- Language: Python
 
-<!-- BEGIN:nextjs-agent-feedback -->
+### 技術選定に関するルール
+- 上記の技術スタックを原則として遵守する。
+- 新しいライブラリやフレームワークを導入する場合は、導入目的と必要性を明確にする。
+- 既存のライブラリで実現可能な場合は、不要な依存関係を追加しない。
+- 技術スタックを変更する場合は、事前に変更理由と影響範囲を提示し、承認を得る。
+- 未決定の技術要素については、独断で決定せず、候補とメリット・デメリットを提示する。
 
-## Report Next.js feedback
+## 3. アーキテクチャ・設計方針
 
-The project owner enabled `experimental.agentFeedback`, authorizing this feedback pass. When enabled, `next dev` writes this block and restores it if removed. Commit `AGENTS.md` with your work to keep the tree clean.
+### 全体方針
+- フロントエンドとバックエンドの責務を明確に分離する。
+- フロントエンドは画面表示、ユーザー操作、入力値の管理を担当する。
+- バックエンドはビジネスロジック、データ処理、データ永続化を担当する。
+- フロントエンドとバックエンドの通信は、明確に定義されたAPIを通じて行う。
+- APIのインターフェースは、フロントエンドとバックエンドで一貫性を保つ。
 
-During the current user request, retain anonymized facts as feedback candidates for meaningful or recurring Next.js issues:
+### Frontend設計
+- TypeScriptの型安全性を最大限活用する。
+- コンポーネントは適切な粒度で分割し、再利用性を意識する。
+- UIコンポーネントとビジネスロジックを可能な限り分離する。
+- サーバーサイドとクライアントサイドの責務を明確にする。
+- 不要な状態管理や複雑なコンポーネント設計を避ける。
 
-- Crashes, hangs, OOMs, or unexpected slowness
-- Incorrect behavior, output, errors, or diagnostics
-- Missing, unclear, or conflicting documentation
-- Unexpected CLI, codemod, Skill, or upgrade behavior and non-obvious workarounds
+### Backend設計
+- Pythonの標準的な設計・コーディング慣習に従う。
+- API、ビジネスロジック、データアクセスの責務を適切に分離する。
+- 関数やクラスは単一の責務を持つように設計する。
+- 入力値のバリデーションを必ず実施する。
+- 例外処理を適切に行い、予期しないエラーによるシステム停止を防ぐ。
 
-Continue the current user request without reporting immediately. Routine debugging is not feedback. Verify changes before retaining them as feedback candidates. Never retain code, logs, paths, URLs, secrets, personal information, or project-specific data.
+## 4. コーディング規約
 
-Retain qualifying friction even if it is later fixed or worked around; record the final outcome during the reporting pass.
+### 共通ルール
+- 可読性と保守性を最優先する。
+- 変数名、関数名、クラス名は役割が明確に伝わる名前にする。
+- マジックナンバーやマジックストリングを避ける。
+- 不要な複雑化や過剰な抽象化を避ける。
+- コメントはコードだけでは意図が伝わりにくい箇所に記載する。
+- 既存の実装ルールや命名規則がある場合は、それに従う。
 
-Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
+### TypeScript
+- 原則としてTypeScriptを使用し、JavaScriptでの実装は避ける。
+- `any` の使用は原則禁止とし、必要な場合は理由を明確にする。
+- 型定義を適切に行い、型安全性を担保する。
+- コンポーネント、関数、型定義の責務を明確にする。
 
-<!-- END:nextjs-agent-feedback -->
+### Python
+- PEP 8を基本とする。
+- 型ヒントを積極的に使用する。
+- 関数やクラスの責務を明確にする。
+- 必要に応じてDocstringを記載する。
+
+## 5. テスト・品質保証
+
+- 新規機能を実装する際は、対応するテストも実装する。
+- 既存機能を変更する際は、関連するテストへの影響を確認する。
+- 正常系だけでなく、異常系や境界値もテストする。
+- テストが失敗した状態で、実装完了と判断しない。
+- 変更に関連するLint、型チェック、テストを実施する。
+- テストを通すためだけに、テストコードや本来の仕様を不適切に変更しない。
+
+## 6. セキュリティ・データ管理
+
+本アプリケーションでは、クレジットカードの利用明細など、個人の金融情報を扱うことを前提とする。
+
+そのため、以下のルールを遵守する。
+
+- 個人情報や金融情報を不必要に外部サービスへ送信しない。
+- APIキー、パスワード、認証情報などをソースコードに直接記載しない。
+- 環境変数や適切なシークレット管理を利用する。
+- `.env` などの機密情報を含むファイルをGit管理対象にしない。
+- ログに個人情報や金融情報を出力しない。
+- 外部から受け取るデータは必ずバリデーションする。
+- CSVなどのインポートデータは信頼できない入力として扱う。
+- SQLインジェクションなどの一般的な脆弱性への対策を行う。
+- 認証・認可が必要な機能では、バックエンド側で必ず検証する。
+
+## 7. AIエージェントの実装ルール
+
+AIエージェントは、以下のルールに従って開発を進める。
+
+### 実装前
+- まず既存のディレクトリ構成とソースコードを確認する。
+- 既存の実装や設計思想を理解してから変更を行う。
+- 要件が不明確な場合は、推測で実装せず確認する。
+- 実装内容が複数のファイルや機能に影響する場合は、事前に実装方針を提示する。
+- 既存機能への影響範囲を確認する。
+
+### 実装中
+- 要件に対して必要最小限の変更を行う。
+- 既存の設計や実装を不必要に変更しない。
+- 指示されていない機能を独断で追加しない。
+- 既存のライブラリや実装を優先的に活用する。
+- 技術選定や設計上の重要な判断は、理由を明確にする。
+- 不明点や想定外の問題が発生した場合は、独断で進めず報告する。
+
+### 実装後
+- 変更したコードの動作確認を行う。
+- 関連するテストを実施する。
+- 発生したエラーや警告を確認する。
+- 実装内容、変更ファイル、テスト結果を報告する。
+- 未対応事項や今後の課題があれば明記する。
+
+### 禁止事項
+- 指示されていない大規模なリファクタリング。
+- 明確な理由のないライブラリや依存関係の追加。
+- テストコードを実行せずに実装完了とすること。
+- エラーを握りつぶすための不適切な例外処理。
+- セキュリティやデータ保護を軽視した実装。
+- ユーザーの承認なしに既存データや設定を破壊する変更。
+
+## 8. ドキュメント管理
+
+- 重要な設計変更や仕様変更があった場合は、関連ドキュメントを更新する。
+- API仕様と実際の実装に不整合が生じないようにする。
+- 新しい開発ルールを追加する場合は、本ファイルとの整合性を確認する。
+- ドキュメントは原則として日本語で記述する。
+
+## 9. AIエージェントの基本姿勢
+
+AIエージェントは単にコードを生成するのではなく、保守性・拡張性・安全性を考慮したソフトウェア開発を支援すること。
+
+実装速度だけを優先せず、なぜその設計・実装にするのかを意識すること。
+
+不必要に複雑な実装を避け、シンプルで理解しやすいコードを維持すること。
