@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@astryxdesign/core/Button";
 import { Card } from "@astryxdesign/core/Card";
 import { Center } from "@astryxdesign/core/Center";
@@ -250,9 +251,18 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
               </Text>
             </VStack>
           </HStack>
-          <Text type="supporting" color="secondary">
-            サンプルデータ
-          </Text>
+          <HStack gap={2} vAlign="center">
+            <Button
+              label="項目別収支"
+              href="/categories"
+              as={Link}
+              variant="secondary"
+              size="sm"
+            />
+            <Text type="supporting" color="secondary">
+              サンプルデータ
+            </Text>
+          </HStack>
         </HStack>
 
         <VStack gap={1}>
