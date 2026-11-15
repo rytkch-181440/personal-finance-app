@@ -253,6 +253,13 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
           </HStack>
           <HStack gap={2} vAlign="center">
             <Button
+              label="CSVを取り込む"
+              href="/import"
+              as={Link}
+              variant="secondary"
+              size="sm"
+            />
+            <Button
               label="項目別収支"
               href="/categories"
               as={Link}
