@@ -8,7 +8,9 @@ import { defaultThemeSlug, themes } from "../astryx-themes";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <InternationalizationProvider locale="ja-JP">
-      <Theme theme={themes[defaultThemeSlug]}>{children}</Theme>
+      <Theme theme={themes[defaultThemeSlug]} mode="light">
+        {children}
+      </Theme>
     </InternationalizationProvider>
   );
 }
