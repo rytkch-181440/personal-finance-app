@@ -9,6 +9,7 @@ import { Divider } from "@astryxdesign/core/Divider";
 import { Grid } from "@astryxdesign/core/Grid";
 import { Icon } from "@astryxdesign/core/Icon";
 import { HStack, VStack } from "@astryxdesign/core/Layout";
+import { List, ListItem } from "@astryxdesign/core/List";
 import { useCalendarDays, useCalendarNavigation } from "@astryxdesign/core/Calendar";
 import { Heading, Text } from "@astryxdesign/core/Text";
 import MoneyInputModal, {
@@ -170,17 +171,14 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
       );
     }
   }
-  const selectedExpense = transactions
-    .filter(
-      (transaction) =>
-        transaction.date === selectedDate && transaction.type === "expense",
-    )
+  const selectedTransactions = transactions.filter(
+    (transaction) => transaction.date === selectedDate,
+  );
+  const selectedExpense = selectedTransactions
+    .filter((transaction) => transaction.type === "expense")
     .reduce((total, transaction) => total + transaction.amount, 0);
-  const selectedIncome = transactions
-    .filter(
-      (transaction) =>
-        transaction.date === selectedDate && transaction.type === "income",
-    )
+  const selectedIncome = selectedTransactions
+    .filter((transaction) => transaction.type === "income")
     .reduce((total, transaction) => total + transaction.amount, 0);
   const daysWithExpenses = new Set(
     monthlyTransactions
@@ -191,8 +189,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
     new Date(`${selectedDate}T12:00:00+09:00`),
   );
 
-  function openEntryDialog(date: ISODateString) {
-    setSelectedDate(date);
+  function openEntryDialog() {
     setIsEntryDialogOpen(true);
   }
 
@@ -262,6 +259,13 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
             <Button
               label="項目別収支"
               href="/categories"
+              as={Link}
+              variant="secondary"
+              size="sm"
+            />
+            <Button
+              label="統計分析"
+              href="/analytics"
               as={Link}
               variant="secondary"
               size="sm"
@@ -355,7 +359,7 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                             size="sm"
                             width="100%"
                             isDisabled={day.isOutside}
-                            onClick={() => openEntryDialog(day.iso)}
+                            onClick={() => setSelectedDate(day.iso)}
                           >
                             {day.dayNumber}
                           </Button>
@@ -409,6 +413,39 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                     </Text>
                   </HStack>
                 </VStack>
+                <Divider />
+                <HStack hAlign="between" vAlign="center">
+                  <Heading level={4}>明細</Heading>
+                  <Button
+                    label="この日に収支を追加"
+                    variant="secondary"
+                    size="sm"
+                    onClick={openEntryDialog}
+                  />
+                </HStack>
+                {selectedTransactions.length > 0 ? (
+                  <List
+                    header={<Text as="p" type="label">登録内容</Text>}
+                    hasDividers
+                    edge="flush"
+                  >
+                    {selectedTransactions.map((transaction, index) => (
+                      <ListItem
+                        key={`${transaction.date}-${transaction.type}-${transaction.amount}-${index}`}
+                        label={transaction.type === "expense" ? "支出" : "収入"}
+                        endContent={
+                          <Text type="label" weight="semibold">
+                            {currency.format(transaction.amount)}
+                          </Text>
+                        }
+                      />
+                    ))}
+                  </List>
+                ) : (
+                  <Text as="p" type="supporting">
+                    この日の登録済み明細はありません。
+                  </Text>
+                )}
               </VStack>
             </Card>
 
