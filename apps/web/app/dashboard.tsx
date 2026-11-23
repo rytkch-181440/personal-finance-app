@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@astryxdesign/core/Button";
 import { Card } from "@astryxdesign/core/Card";
@@ -15,11 +15,17 @@ import { Heading, Text } from "@astryxdesign/core/Text";
 import MoneyInputModal, {
   type MoneyInputEntry,
 } from "./components/MoneyInputModal";
+import QuickExpenseModal from "./components/QuickExpenseModal";
+import {
+  isQuickExpenseCategory,
+  type QuickExpenseCategory,
+} from "./components/quickExpenseData";
 
 type Transaction = {
   date: ISODateString;
   type: MoneyInputEntry["type"];
   amount: number;
+  category?: QuickExpenseCategory;
 };
 
 const sampleExpenseAmounts = [
@@ -139,7 +145,33 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
   const [transactions, setTransactions] = useState(() =>
     createSampleTransactions(initialDate),
   );
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem("kurashi.quick-transactions");
+        if (!stored) return;
+        const parsed = JSON.parse(stored) as Transaction[];
+        if (Array.isArray(parsed)) {
+          setTransactions((current) => [
+            ...current,
+            ...parsed.filter(
+              (entry) =>
+                typeof entry.date === "string" &&
+                (entry.type === "expense" || entry.type === "income") &&
+                typeof entry.amount === "number" &&
+                (entry.category === undefined ||
+                  isQuickExpenseCategory(entry.category)),
+            ),
+          ]);
+        }
+      } catch {
+        // Keep the sample data when local storage is unavailable or invalid.
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
+  const [isQuickExpenseOpen, setIsQuickExpenseOpen] = useState(false);
   const {
     monthYearLabel,
     visibleCalendarMonths,
@@ -205,6 +237,18 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
     setIsEntryDialogOpen(false);
   }
 
+  function saveQuickExpense(amount: number, category: QuickExpenseCategory) {
+    setTransactions((currentTransactions) => [
+      ...currentTransactions,
+      {
+        date: initialDate,
+        type: "expense",
+        amount,
+        category,
+      },
+    ]);
+  }
+
   function changeMonth(delta: number) {
     const nextMonth = new Date(Date.UTC(year, month - 1 + delta, 1));
     const nextDate = formatISODate(
@@ -249,6 +293,12 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
             </VStack>
           </HStack>
           <HStack gap={2} vAlign="center">
+            <Button
+              label="今日の支出を入力"
+              variant="primary"
+              size="sm"
+              onClick={() => setIsQuickExpenseOpen(true)}
+            />
             <Button
               label="CSVを取り込む"
               href="/import"
@@ -432,7 +482,10 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
                     {selectedTransactions.map((transaction, index) => (
                       <ListItem
                         key={`${transaction.date}-${transaction.type}-${transaction.amount}-${index}`}
-                        label={transaction.type === "expense" ? "支出" : "収入"}
+                        label={
+                          transaction.category ??
+                          (transaction.type === "expense" ? "支出" : "収入")
+                        }
                         endContent={
                           <Text type="label" weight="semibold">
                             {currency.format(transaction.amount)}
@@ -497,6 +550,15 @@ export default function Dashboard({ initialDate }: { initialDate: ISODateString 
       onOpenChange={setIsEntryDialogOpen}
       dateLabel={selectedDateLabel}
       onSave={saveTransaction}
+    />
+    <QuickExpenseModal
+      isOpen={isQuickExpenseOpen}
+      onOpenChange={setIsQuickExpenseOpen}
+      date={initialDate}
+      dateLabel={weekdayFormatter.format(
+        new Date(`${initialDate}T12:00:00+09:00`),
+      )}
+      onSave={saveQuickExpense}
     />
     </>
   );
