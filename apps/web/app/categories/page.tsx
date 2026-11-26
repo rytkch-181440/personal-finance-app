@@ -19,6 +19,7 @@ import {
 } from "@astryxdesign/core/Layout";
 import { Heading, Text } from "@astryxdesign/core/Text";
 import { TextInput } from "@astryxdesign/core/TextInput";
+import { fetchCategories, type ApiCategory } from "./api";
 
 type CategoryType = "expense" | "income";
 
@@ -219,6 +220,19 @@ function formatCurrency(amount: number | null) {
   return amount === null ? "—" : currency.format(amount);
 }
 
+function getApiCategoryLabel(category: ApiCategory, index: number) {
+  const name = category.name ?? category.category_name ?? category.title;
+  const type = category.type ?? category.category_type;
+  const label =
+    typeof name === "string"
+      ? name
+      : typeof category.id === "string" || typeof category.id === "number"
+        ? `カテゴリ ${category.id}`
+        : `カテゴリ ${index + 1}`;
+
+  return typeof type === "string" ? `${label}（${type}）` : label;
+}
+
 function CategoryGroup({
   type,
   items,
@@ -365,6 +379,13 @@ export default function CategoriesPage() {
     type: CategoryType;
     item: CategoryItem;
   } | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apiCategories, setApiCategories] = useState<ApiCategory[] | null>(
+    null,
+  );
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [isFetchingCategories, setIsFetchingCategories] = useState(false);
 
   const expenseTotal = sumAmounts(categories.expense);
   const incomeTotal = sumAmounts(categories.income);
@@ -447,6 +468,25 @@ export default function CategoriesPage() {
     setDeleteTarget(null);
   }
 
+  async function handleFetchCategories() {
+    setApiError(null);
+    setIsFetchingCategories(true);
+
+    try {
+      const fetchedCategories = await fetchCategories(email, password);
+      setApiCategories(fetchedCategories);
+      setPassword("");
+    } catch (error) {
+      setApiError(
+        error instanceof Error
+          ? error.message
+          : "カテゴリを取得できませんでした。",
+      );
+    } finally {
+      setIsFetchingCategories(false);
+    }
+  }
+
   return (
     <>
       <Layout
@@ -481,6 +521,71 @@ export default function CategoriesPage() {
                   支出・収入の項目を登録し、それぞれの金額と合計を確認できます。
                 </Text>
               </VStack>
+
+              <Card padding={4}>
+                <VStack gap={3}>
+                  <VStack gap={0.5}>
+                    <Heading level={2}>APIからカテゴリを取得</Heading>
+                    <Text as="p" type="supporting">
+                      アカウントで認証し、登録済みのカテゴリ一覧を取得します。
+                    </Text>
+                  </VStack>
+                  <TextInput
+                    label="メールアドレス"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    autoCapitalize="none"
+                    hasAutoCorrect={false}
+                  />
+                  <TextInput
+                    label="パスワード"
+                    type="password"
+                    value={password}
+                    onChange={setPassword}
+                  />
+                  <Button
+                    label={isFetchingCategories ? "取得中..." : "カテゴリを取得"}
+                    variant="primary"
+                    isDisabled={!email.trim() || !password || isFetchingCategories}
+                    onClick={handleFetchCategories}
+                  />
+                  {apiError && (
+                    <Text as="p" type="supporting" role="alert">
+                      {apiError}
+                    </Text>
+                  )}
+                  {apiCategories !== null && (
+                    apiCategories.length > 0 ? (
+                      <List
+                        header={<Text as="p" type="label">取得したカテゴリ</Text>}
+                        hasDividers
+                        edge="flush"
+                      >
+                        {apiCategories.map((category, index) => (
+                          <ListItem
+                            key={
+                              typeof category.id === "string" ||
+                              typeof category.id === "number"
+                                ? category.id
+                                : index
+                            }
+                            label={
+                              <Text as="p" type="label">
+                                {getApiCategoryLabel(category, index)}
+                              </Text>
+                            }
+                          />
+                        ))}
+                      </List>
+                    ) : (
+                      <Text as="p" type="supporting">
+                        登録済みのカテゴリはありません。
+                      </Text>
+                    )
+                  )}
+                </VStack>
+              </Card>
 
               {persistenceMessage && (
                 <Card padding={3} variant="muted">

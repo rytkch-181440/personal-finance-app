@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## API接続設定
+
+カテゴリ画面ではメールアドレスとパスワードで `POST /auth/token` を実行し、取得したアクセストークンを使って `GET /categories` を呼び出します。APIのベースURLは `NEXT_PUBLIC_API_BASE_URL` で設定できます。未設定時は `http://127.0.0.1:8000` を使用します。バックエンド側では許可するフロントエンドのオリジンを `FRONTEND_ORIGINS` に設定してください。
+
 ## Getting Started
 
 First, run the development server:
