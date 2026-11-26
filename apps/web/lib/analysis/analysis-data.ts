@@ -1,4 +1,4 @@
-import { iconFor, type StoredCats } from "../ds/category-icon";
+import { iconFor, type StoredCats } from "@/components/categories/category-icon";
 import type { LucideIcon } from "lucide-react";
 
 const yen = (n: number) => "¥" + Math.round(n).toLocaleString("ja-JP");

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "../components/ds/card";
-import { Button } from "../components/ds/button";
-import { Badge } from "../components/ds/badge";
-import { Input } from "../components/ds/input";
-import { Tabs } from "../components/ds/tabs";
-import { Tag } from "../components/ds/tag";
-import { CatIcon, loadStoredCats, KN, type CatParent, type StoredCats } from "../components/ds/category-icon";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
+import { Tag } from "@/components/ui/tag";
+import { CatIcon, loadStoredCats, KN, type CatParent, type StoredCats } from "@/components/categories/category-icon";
 
 const yen = (n: number) => "¥" + n.toLocaleString("ja-JP");
 

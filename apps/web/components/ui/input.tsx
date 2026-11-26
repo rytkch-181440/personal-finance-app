@@ -1,18 +1,45 @@
-import * as React from "react"
-import { cn } from "cn"
+"use client";
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+
+export function Input({
+  label,
+  error,
+  className,
+  id,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & {
+  label?: ReactNode;
+  error?: ReactNode;
+}) {
+  const [focused, setFocused] = useState(false);
   return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-        className
-      )}
-      {...props}
-    />
-  )
+    <label className={cn("flex w-full flex-col gap-1.5 font-body", className)}>
+      {label && <span className="text-[13px] font-semibold text-heading">{label}</span>}
+      <input
+        id={id}
+        className={cn(
+          "w-full rounded-sm border bg-card px-4 py-3 font-body text-base text-body outline-none",
+          "transition-shadow duration-fast ease-future",
+          error
+            ? "border-danger"
+            : focused
+              ? "border-border-focus shadow-(--focus-ring)"
+              : "border-border",
+          "disabled:bg-sunken disabled:text-muted"
+        )}
+        onFocus={(e) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        }}
+        {...props}
+      />
+      {error && <span className="text-xs text-danger">{error}</span>}
+    </label>
+  );
 }
-
-export { Input }

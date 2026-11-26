@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AppShell } from "./components/shell/app-shell";
+import { AppShell } from "@/components/shell/app-shell";
 
 export const metadata: Metadata = {
   title: "kurashi | 家計簿",

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useCategoryIcons } from "../components/ds/category-icon";
-import { computeViewModel } from "../components/pages/analysis-data";
-import { AnalysisSections, PeriodControls } from "../components/pages/analysis-sections";
+import { useCategoryIcons } from "@/components/categories/category-icon";
+import { computeViewModel } from "@/lib/analysis/analysis-data";
+import { AnalysisSections, PeriodControls } from "@/components/analysis/analysis-sections";
 
 export default function AnalyticsPage() {
   const [unit, setUnit] = useState<"month" | "year">("month");

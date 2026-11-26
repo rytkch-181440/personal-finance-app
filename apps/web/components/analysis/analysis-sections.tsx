@@ -1,14 +1,14 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { Card } from "@/app/components/ds/card";
-import { Button } from "@/app/components/ds/button";
-import { Badge } from "@/app/components/ds/badge";
-import { Tag } from "@/app/components/ds/tag";
-import { Tabs } from "@/app/components/ds/tabs";
-import { Select } from "@/app/components/ds/select";
-import { iconFor } from "@/app/components/ds/category-icon";
-import type { ViewModel } from "./analysis-data";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/ui/tag";
+import { Tabs } from "@/components/ui/tabs";
+import { Select } from "@/components/ui/select";
+import { iconFor } from "@/components/categories/category-icon";
+import type { ViewModel } from "@/lib/analysis/analysis-data";
 
 export function PeriodControls({
   vm,

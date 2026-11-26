@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "../components/ds/card";
-import { Select } from "../components/ds/select";
-import { CatIcon, loadStoredCats, KN, type StoredCats } from "../components/ds/category-icon";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { CatIcon, loadStoredCats, KN, type StoredCats } from "@/components/categories/category-icon";
 
 const yen = (n: number) => "¥" + n.toLocaleString("ja-JP");
 const signed = (n: number) => (n < 0 ? "−" : "+") + yen(Math.abs(n));

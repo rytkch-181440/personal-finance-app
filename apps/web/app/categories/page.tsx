@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "../components/ds/card";
-import { Button } from "../components/ds/button";
-import { Input } from "../components/ds/input";
-import { Tabs } from "../components/ds/tabs";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
 import {
   ICONS,
   ICON_IDS,
@@ -14,7 +14,7 @@ import {
   saveStoredCats,
   type CatParent,
   type StoredCats,
-} from "../components/ds/category-icon";
+} from "@/components/categories/category-icon";
 
 type Type = "expense" | "income";
 type EditState = { level: "parent" | "child"; orig: string } | null;

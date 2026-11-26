@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card } from "@/app/components/ds/card";
-import { Button } from "@/app/components/ds/button";
-import { Badge } from "@/app/components/ds/badge";
-import { Tag as FilterTag } from "@/app/components/ds/tag";
-import { Input } from "@/app/components/ds/input";
-import { Tabs } from "@/app/components/ds/tabs";
-import { useCategoryIcons } from "@/app/components/ds/category-icon";
-import { computeViewModel } from "./analysis-data";
-import { AnalysisSections, PeriodControls } from "./analysis-sections";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tag as FilterTag } from "@/components/ui/tag";
+import { Input } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
+import { useCategoryIcons } from "@/components/categories/category-icon";
+import { computeViewModel } from "@/lib/analysis/analysis-data";
+import { AnalysisSections, PeriodControls } from "@/components/analysis/analysis-sections";
 
 export function DashboardPage() {
   const [unit, setUnit] = useState<"month" | "year">("month");

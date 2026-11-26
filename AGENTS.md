@@ -165,6 +165,27 @@ AIエージェントは単にコードを生成するのではなく、保守性
 PC版UIは、`design/` に展開したデザインモックを忠実に再現する方針とする。
 
 - スタイリングは Tailwind CSS v4 を使用し、デザイントークンは `apps/web/app/globals.css` の `@theme` に定義する。
-- 再利用UIパーツは `apps/web/app/components/ds/` に配置する（Card / Button / Badge / Tag / Input / Select / Checkbox / Tabs など）。
 - Astryx は廃止済みであり、UIコンポーネントとしては一切使用しない。関連する依存パッケージや記述を再導入しないこと。
 - `design/` ディレクトリはGit管理対象外（`.gitignore` 済み）。
+
+### フロントエンドのディレクトリ構成
+
+`apps/web/` の構成は以下のルールに従う。
+
+```
+apps/web/
+  app/            # App Router。ルート定義と画面固有の実装をコロケーションする
+  components/
+    ui/           # デザインプリミティブ（Card / Button / Badge / Tag / Input / Select / Checkbox / Tabs）
+    shell/        # アプリ全体の骨格（サイドバー等のレイアウト）
+    <domain>/     # 2画面以上で共有するUI（analysis, categories, dashboard など）
+  lib/
+    <domain>/     # UIを持たないドメインロジック（analysis-data など）
+    api/          # APIクライアントの共通部（ベースURL・認証・トークン管理）
+    utils.ts      # 汎用ユーティリティ
+```
+
+- 画面専用のコンポーネントやAPIクライアントは、そのルートの `app/<route>/` 配下に置く（例: `app/categories/api.ts`）。
+- 2画面以上で共有するUIは `components/<domain>/`、共有するロジックは `lib/<domain>/` に置く。
+- `components/ui/` には汎用プリミティブのみを置き、ドメイン固有のコンポーネントは置かない。
+- Atomic Design や features/ 構成は採用しない。上記の「UIは components、ロジックは lib、画面は app」のレイヤー分けを基本とする。
