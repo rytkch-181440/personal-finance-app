@@ -160,34 +160,11 @@ AIエージェントは単にコードを生成するのではなく、保守性
 
 不必要に複雑な実装を避け、シンプルで理解しやすいコードを維持すること。
 
-<!-- ASTRYX:START -->
-Astryx v0.7.13 · 174 コンポーネント
-CLI: すべてのコマンドは `bunx astryx <cmd>` で実行します（以下では `astryx ...` と表記します）。
+## 10. UI実装方針
 
-セットアップ（1回のみ。例: main.tsx などのアプリエントリーポイント）— これらがないと、コンポーネントにスタイルが適用されません。
-  import "@astryxdesign/core/reset.css";
-  import "@astryxdesign/core/astryx.css";
+PC版UIは、`design/` に展開したデザインモックを忠実に再現する方針とする。
 
-作業手順 — ページは毎回テンプレートを起点にし、ゼロから作らないでください。
-1. `astryx build "<idea>"` — 土台にするテンプレートと、不足している要素を特定します。
-2. `astryx template <name> <path>` — テンプレートを生成します。枠組み、間隔、余白は維持し、内容を置き換えます。
-3. 不足する部分には `astryx template <Block>` を使い、使用前に `astryx component <Name>` でプロパティを確認します。
-既存ページを変更する場合は、そのページを維持します。手順2は省略し、各セクション内にブロックやコンポーネントを追加してください。
-ビルドを提供する前に `astryx doctor --built <dir>` を実行してください。検査に失敗した状態では提供しないでください。
-
-ルール:
-- `<div>` は使用しないでください。レイアウトと余白はコンポーネントで構成します。
-- テンプレートの枠組みを変更する前に `astryx docs layout` を確認してください。
-- データ量が多い場合は、カードで囲んだリストではなく行（Table、List/Item）で表示してください。Badge は件数の表示に限って使用します。
-- まずコンポーネントのプロパティでスタイルを指定し、次にトークン（`var(--color-*|--spacing-*|--radius-*)`）を使ってください。生の16進カラー値やpx値は使わないでください。この環境ではStyleX/Tailwind用コンパイラーを使わず、xstyleやユーティリティクラスを直接使用しないでください。StyleXを使うテンプレートにはコンパイラープラグインが必要な場合があります。`astryx docs styling-overview` を参照してください。
-- パレットや独自カラーはテーマを通して設定し、`:root` を直接上書きしないでください。テーマの追加には `astryx theme add <slug>` を使います。`theme eject <slug>` はソースを独立して編集する場合に限って使用してください。`astryx docs theme` を参照してください。
-- 自己確認: ファイルを読み直し、生の `<div>` / `<span>`、`.css` の直接importや `@apply`、ハードコードされた16進カラー値やpx値を、適切なコンポーネントまたはトークンに置き換えてください。
-
-`astryx help` にはすべてのコマンドが記載されています。作業手順以外でよく使うコマンド:
-  search "<query>"   コンポーネント、フック、ドキュメント、テンプレートを検索
-  discover <words>   追加可能なインテグレーションを検索
-  docs <topic>       getting-started、principles、tokens、theme などの資料を表示（全項目は `astryx docs` を参照）
-  docs cli           コマンドとAPIのリファレンスを表示
-  docs authoring     インテグレーションパッケージと各項目の作成方法を表示
-  upgrade --from <old version> --apply   依存関係の更新後に移行処理を実行
-<!-- ASTRYX:END -->
+- スタイリングは Tailwind CSS v4 を使用し、デザイントークンは `apps/web/app/globals.css` の `@theme` に定義する。
+- 再利用UIパーツは `apps/web/app/components/ds/` に配置する（Card / Button / Badge / Tag / Input / Select / Checkbox / Tabs など）。
+- Astryx は廃止済みであり、UIコンポーネントとしては一切使用しない。関連する依存パッケージや記述を再導入しないこと。
+- `design/` ディレクトリはGit管理対象外（`.gitignore` 済み）。
